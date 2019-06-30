@@ -1,0 +1,8 @@
+record: True
+
+data_file: "data/depth_data.hdf5"
+batch_size: 32
+
+num_iters: 200000
+latent_dim: 128
+learning_rate: 0.001
