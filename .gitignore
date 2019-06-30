@@ -123,3 +123,11 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+#Results
+results/
+
+#Data files
+*.hdf5
+*.h5
+*.zip
