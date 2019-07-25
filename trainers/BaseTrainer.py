@@ -23,7 +23,8 @@ class BaseTrainer(object):
         self.images = images
 
         self.maps = tf.cast(maps, tf.float32)
-
+        
+        '''
         self.coarse = Coarse(images, params)
 
         self.coarse_maps = self.coarse.forward()
@@ -32,10 +33,10 @@ class BaseTrainer(object):
 
         self.est_maps = tf.reshape(self.fine.forward(), [-1, 200, 200])
 
-        #dy_hat, dx_hat = tf.image.image_gradients(tf.expand_dims(self.est_maps, axis=3))
-        #dy, dx = tf.image.image_gradients(tf.expand_dims(self.maps, axis=3))
+        dy_hat, dx_hat = tf.image.image_gradients(tf.expand_dims(self.est_maps, axis=3))
+        dy, dx = tf.image.image_gradients(tf.expand_dims(self.maps, axis=3))
 
-        #smoothness = tf.reduce_mean(tf.abs(dy_hat) * tf.exp(-1 * dy) + tf.abs(dx_hat) * tf.exp(-1 * dx)) 
+        smoothness = tf.reduce_mean(tf.abs(dy_hat) * tf.exp(-1 * dy) + tf.abs(dx_hat) * tf.exp(-1 * dx)) 
 
         self.stage_1_loss = tf.reduce_mean(tf.abs((self.coarse_maps - self.maps)))
         self.stage_2_loss = tf.reduce_mean(tf.abs((self.est_maps - self.maps))) #+ smoothness
@@ -44,8 +45,25 @@ class BaseTrainer(object):
         optim2 = tf.train.AdamOptimizer(params['learning_rate'], beta1=0.1, beta2=0.999, epsilon=1e-3)
         self.step_1 = optim1.minimize(self.stage_1_loss, var_list=self.coarse.parameters)
         self.step_2 = optim2.minimize(self.stage_2_loss, var_list=self.fine.parameters)
-
-
+        '''
+        
+        Enc = Encoder(self.images, params)
+        codes = Enc.forward()
+        
+        x_0 = self.images
+        
+        poly1 = PolyNet(self.images, params)
+        x_1 = poly1.forward()
+        
+        poly2 = PolyNet(x_1, params, reuse=True)
+        x_2 = poly2.forward()
+        
+        self.est_maps = codes[:, :, 0] * x_0 + codes[:, :, 1] * x_1 + codes[:, :, 2] * x_2
+        
+        self.loss = tf.reduce_mean(tf.abs((self.est_maps - self.maps)))
+        optim = tf.train.AdamOptimizer(params['learning_rate'], beta1=0.1, beta2=0.999, epsilon=1e-3)
+        self.step = optim.minimize(self.loss)
+        
     def init_data(self):
 
         with h5py.File(self.params["data_file"], 'r') as f:
@@ -71,7 +89,7 @@ class BaseTrainer(object):
         saver = tf.train.Saver()
 
         for i in range(self.params['num_iters']):
-
+            '''
             if i < 10000:
                 loss, coarses, maps, ests, _ = self.sess.run([self.stage_1_loss, self.coarse_maps, self.maps, self.est_maps, self.step_1])
             else:
@@ -89,4 +107,15 @@ class BaseTrainer(object):
 
                 save_path = saver.save(self.sess, result_dir + "/model.ckpt")
                 print("Model saved in path: %s" % save_path)
+            '''
+            loss, maps, ests, _ = self.sess.run([self.loss, self.maps, self.est_maps, self.step])
+            
+            if i % 500 == 0:
+                
+                _map = maps[0, :, :]
+                imageio.imwrite(result_dir + "/gt" + str(i) + ".png", _map)
+                _est = ests[0, :, :]
+                imageio.imwrite(result_dir + "/pred" + str(i) + ".png", _est)
 
+                save_path = saver.save(self.sess, result_dir + "/model.ckpt")
+                print("Model saved in path: %s" % save_path)
