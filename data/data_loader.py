@@ -13,7 +13,10 @@ class DataLoader(object):
         print(images.shape)
         
         images = images / 255
-        
+        mean = np.mean(depth_maps, axis=(1,2), keepdims=True)
+        std = np.std(depth_maps, axis=(1,2), keepdims=True)
+        depth_maps = (depth_maps - mean) / std
+
         dm_placeholder = tf.placeholder(depth_maps.dtype, depth_maps.shape)
         images_placeholder = tf.placeholder(images.dtype, images.shape)
         dataset = tf.data.Dataset.from_tensor_slices((images_placeholder, dm_placeholder))

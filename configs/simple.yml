@@ -1,6 +1,4 @@
-record: True
-
-data_file: "data/depth_data.hdf5"
+data_file: "data/train_big.hdf5"
 batch_size: 32
 
 num_iters: 200000
