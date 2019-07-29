@@ -1,7 +1,7 @@
 import argparse
 import yaml
 
-from trainers.BaseTrainer import BaseTrainer
+from trainers.base_trainer import BaseTrainer
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config", type=str, help='path to config file')
