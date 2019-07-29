@@ -16,11 +16,11 @@ class BaseTrainer(object):
 
         self.sess = tf.Session()
 
-        images, maps = self.init_data().next_batch
+        images, sparse, maps = self.init_data().next_batch
 
-        images = tf.cast(images, tf.float32)
+        self.images = tf.cast(images, tf.float32)
 
-        self.images = images
+        self.sparse = tf.cast(sparse, tf.float32)
 
         self.maps = tf.cast(maps, tf.float32)
         
