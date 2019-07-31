@@ -23,12 +23,31 @@ class BaseTrainer(object):
         self.sparse = tf.cast(sparse, tf.float32)
 
         self.maps = tf.cast(maps, tf.float32)
+
+        self.global = Global(images, sparse, params)
+
+        self.global_out = self.global.forward()
         
-        input_imgs = tf.concat([self.images, tf.expand_dims(self.sparse, axis=3)], axis=3)
-
-        self.net = Network(input_imgs, params)
-
-        self.est_maps = tf.reshape(self.net.forward(), [-1, 200, 200])
+        self.guidance_maps = self.global_out[:, :, :, 0:1]
+        global_confidence = self.global_out[:, :, :, 1:2]
+        self.global_depth = self.global_out[:, :, :, 2:3]
+        
+        self.local = Local(self.sparse, self.guidance_maps, params)
+        
+        self.local_out = self.local.forward()
+        
+        local_confidence = self.local_out[:, :, :, 0:1]
+        self.local_depth = self.local_out[:, :, :, 1:2]
+        
+        confidence_concat = tf.concat([global_confidence, local_confidence], axis=3)
+        
+        confidence_softmax = tf.softmax(confidence_concat, axis=3)
+        
+        self.global_confidence = confidence_softmax[:, :, :, 0:1]
+        self.local_confidence = confidence_softmax[:, :, :, 1:2]
+        
+        self.est_maps = self.global_confidence * self.global_depth + self.local_confidence * self.local_depth
+        
         
         self.loss = tf.reduce_mean(tf.abs((self.est_maps - self.maps)))
 
