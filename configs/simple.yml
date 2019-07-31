@@ -1,6 +1,6 @@
-data_file: "data/train_big.hdf5"
+data_file: "data/data_01.h5"
 batch_size: 32
 
-num_iters: 200000
+num_iters: 10000
 latent_dim: 128
 learning_rate: 0.001

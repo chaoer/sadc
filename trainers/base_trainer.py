@@ -24,7 +24,7 @@ class BaseTrainer(object):
 
         self.maps = tf.cast(maps, tf.float32)
         
-        input_imgs = tf.concat([self.images, self.sparse], axis=3)
+        input_imgs = tf.concat([self.images, tf.expand_dims(self.sparse, axis=3)], axis=3)
 
         self.net = Network(input_imgs, params)
 
@@ -32,7 +32,8 @@ class BaseTrainer(object):
         
         self.loss = tf.reduce_mean(tf.abs((self.est_maps - self.maps)))
 
-        optim = tf.train.AdamOptimizer(params['learning_rate'], beta1=0.1, beta2=0.999, epsilon=1e-3)
+        #optim = tf.train.AdamOptimizer(params['learning_rate'], beta1=0.1, beta2=0.999, epsilon=1e-3)
+        optim = tf.train.GradientDescentOptimizer(params['learning_rate']) 
         self.step = optim.minimize(self.loss)
         
     def init_data(self):
@@ -62,14 +63,20 @@ class BaseTrainer(object):
 
         for i in range(self.params['num_iters']):
             
-            loss, maps, ests, _ = self.sess.run([self.loss, self.maps, self.est_maps, self.step])
+            loss, img, sparse, maps, ests, _ = self.sess.run([self.loss, self.images, self.sparse, self.maps, self.est_maps, self.step])
             
+            if i % 10 == 0:
+                print(i, loss)
             if i % 500 == 0:
                 
                 _map = maps[0, :, :]
                 imageio.imwrite(result_dir + "/gt" + str(i) + ".png", _map)
                 _est = ests[0, :, :]
                 imageio.imwrite(result_dir + "/pred" + str(i) + ".png", _est)
+                _img = img[0, :, :, :]
+                imageio.imwrite(result_dir + "/img" + str(i) + ".png", _img)
+                _sparse = sparse[0, :, :]
+                imageio.imwrite(result_dir + "/sparse" + str(i) + ".png", _sparse)
 
                 save_path = saver.save(self.sess, result_dir + "/model.ckpt")
                 print("Model saved in path: %s" % save_path)
