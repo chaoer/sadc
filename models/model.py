@@ -9,7 +9,7 @@ class Global:
             sparse = tf.reshape(sparse, [-1, 200, 200, 1])
             images = tf.reshape(images, [-1, 200, 200, 3])
             x = tf.concat([images, sparse], axis=3)
-            
+            x = tf.cast(x, dtype=tf.float32)
             x = conv2d(x, 32, (3, 3), strides=(2,2), padding='same')
             x = relu(x)
             x = conv2d(x, 64, (3,3), strides=(2,2), padding='same')

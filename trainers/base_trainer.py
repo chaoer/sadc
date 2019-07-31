@@ -24,9 +24,9 @@ class BaseTrainer(object):
 
         self.maps = tf.cast(maps, tf.float32)
 
-        self.global = Global(images, sparse, params)
+        self.global_ = Global(images, sparse, params)
 
-        self.global_out = self.global.forward()
+        self.global_out = self.global_.forward()
         
         self.guidance_maps = self.global_out[:, :, :, 0:1]
         global_confidence = self.global_out[:, :, :, 1:2]
@@ -41,12 +41,12 @@ class BaseTrainer(object):
         
         confidence_concat = tf.concat([global_confidence, local_confidence], axis=3)
         
-        confidence_softmax = tf.softmax(confidence_concat, axis=3)
+        confidence_softmax = tf.nn.softmax(confidence_concat, axis=3)
         
         self.global_confidence = confidence_softmax[:, :, :, 0:1]
         self.local_confidence = confidence_softmax[:, :, :, 1:2]
         
-        self.est_maps = self.global_confidence * self.global_depth + self.local_confidence * self.local_depth
+        self.est_maps = tf.squeeze(self.global_confidence * self.global_depth + self.local_confidence * self.local_depth)
         
         
         self.loss = tf.reduce_mean(tf.abs((self.est_maps - self.maps)))
