@@ -1,4 +1,4 @@
-data_file: "data/data_01.h5"
+data_file: "data/old_data/data_01.h5"
 batch_size: 32
 
 num_iters: 10000
