@@ -36,7 +36,7 @@ for root, dirs, files in os.walk(rgb_dir1):
             k = render_class
 
             render_dict[k] = render_file
-
+'''
 for root, dirs, files in os.walk(rgb_dir2):
     for file in files:
         if file.endswith(".tif"):
@@ -47,7 +47,7 @@ for root, dirs, files in os.walk(rgb_dir2):
             k = render_class
 
             render_dict[k] = render_file
-
+'''
 #Find and cache all DSMs
 print("Finding DSMs...")
 dsm_list = []
@@ -56,13 +56,13 @@ for root, dirs, files in os.walk(dsm_dir1):
         if file.endswith(".tif"):
             dsm_file = os.path.join(root, file)
             dsm_list.append(dsm_file)
-
+'''
 for root, dirs, files in os.walk(dsm_dir2):
     for file in files:
         if file.endswith(".tif"):
             dsm_file = os.path.join(root, file)
             dsm_list.append(dsm_file)
-
+'''
 print("Found", len(dsm_list), "DSM files...")
 
 random.shuffle(dsm_list)
@@ -100,9 +100,17 @@ for i, dsm_file in tqdm(enumerate(train_dsm), total=len(train_dsm)):
             window = ((row_l, row_u), (col_l, col_u))
             depth = src.read(window=window)
             depth = scipy.misc.imresize(depth[0, :, :], (200, 200))
+            sort_depth = np.zeros(200*200)
+            sort_indices = np.argsort(depth.flatten())
+            print(sort_indices)
+            for pos, index in enumerate(sort_indices):
+                sort_depth[index] = pos
+            sort_depth = np.reshape(sort_depth, [200, 200])
+            print(sort_depth)
             train_depths[n_crops*i+j, :, :] = depth
-            if debug:
+            if True:
                 scipy.misc.imsave('depth' + str(j) + '.jpg', depth[:, :])
+                scipy.misc.imsave('sorted_depth' + str(j) + '.jpg', sort_depth[:, :])
 
 
             sparse = depth

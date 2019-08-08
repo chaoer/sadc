@@ -1,10 +1,14 @@
 import os
 import rasterio
 import numpy as np
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 import scipy.misc
 from PIL import Image
 from sklearn.model_selection import train_test_split
+from sklearn.cluster import KMeans
+from sklearn.feature_extraction.image import img_to_graph
+from scipy.interpolate import interp2d
 from itertools import combinations_with_replacement
 from collections import defaultdict
 import random
@@ -19,7 +23,7 @@ rgb_dir2 = "raw/RGB_2"
 
 train_pct = .75
 n_crops = 10
-keep_pct = .01
+keep_pct = 0.01
 debug = False
 
 
@@ -70,60 +74,10 @@ random.shuffle(dsm_list)
 #Create train/test partition
 train_dsm, test_dsm = train_test_split(dsm_list, train_size=train_pct)
             
-#Create training set
-train_depths = np.zeros((n_crops*len(train_dsm), 200, 200))
-train_sparse = np.zeros((n_crops*len(train_dsm), 200, 200))
-train_images = np.zeros([n_crops*len(train_dsm), 200, 200, 3])
-for i, dsm_file in tqdm(enumerate(train_dsm), total=len(train_dsm)):
-    with rasterio.open(dsm_file, 'r') as src:
-        width = src.width
-        height = src.height
-    
-    file_parts = os.path.splitext(dsm_file)
-    k = file_parts[0].split('/')[2][4:]
-    render = render_dict[k]
-    if render is None:
-        k = file_parts[0].split('/')[2][4:-4]
-        render = render_dict[k]
-    _img = Image.open(render).convert("RGB")
-
-    for j in range(n_crops):    
-        with rasterio.open(dsm_file, 'r') as src:
-            matrix = src.transform
-            
-            row_l = np.random.uniform(0, height-500)
-            col_l = np.random.uniform(0, width-500)
-            
-            row_u = row_l + 500
-            col_u = col_l + 500
-            
-            window = ((row_l, row_u), (col_l, col_u))
-            depth = src.read(window=window)
-            depth = scipy.misc.imresize(depth[0, :, :], (200, 200))
-            train_depths[n_crops*i+j, :, :] = depth
-            if debug:
-                scipy.misc.imsave('depth' + str(j) + '.jpg', depth[:, :])
-
-
-            sparse = depth
-            k_list = np.random.choice(np.arange(200), size=int(200*200 * (1-keep_pct)))
-            l_list = np.random.choice(np.arange(200), size=int(200*200 * (1-keep_pct)))
-            for k, l in zip(k_list, l_list):
-                sparse[k, l] = -1
-            train_sparse[n_crops*i+j, :, :] = sparse
-            if debug:
-                scipy.misc.imsave('sparse' + str(j) + '.jpg', sparse[:, :])
-            
-            img = _img.crop(box=(col_l, row_l, col_u, row_u))
-            img.thumbnail((200, 200))
-            if debug:
-                img.save('img' + str(j) + '.jpg', 'JPEG')
-            train_images[n_crops*i+j, :, :, :] = img
-
 #Create testing set
 test_depths = np.zeros((n_crops*len(test_dsm), 200, 200))
 test_sparse = np.zeros((n_crops*len(test_dsm), 200, 200))
-test_images = np.zeros([n_crops*len(test_dsm), 200, 200, 3])
+test_images = np.zeros([n_crops*len(test_dsm), 200, 200])
 for i, dsm_file in tqdm(enumerate(test_dsm), total=len(test_dsm)):
     with rasterio.open(dsm_file, 'r') as src:
         width = src.width
@@ -135,7 +89,7 @@ for i, dsm_file in tqdm(enumerate(test_dsm), total=len(test_dsm)):
     if render is None:
         k = file_parts[0].split('/')[2][4:-4]
         render = render_dict[k]
-    _img = Image.open(render).convert("RGB")
+    _img = Image.open(render).convert("L")
 
     for j in range(n_crops):    
         with rasterio.open(dsm_file, 'r') as src:
@@ -167,18 +121,44 @@ for i, dsm_file in tqdm(enumerate(test_dsm), total=len(test_dsm)):
             img.thumbnail((200, 200))
             if debug:
                 img.save('img' + str(j) + '.jpg', 'JPEG')
-            test_images[n_crops*i+j, :, :, :] = img
-           
-#Create HDF5 file and contents
-f = h5py.File('data_01.h5','w')
-train = f.create_group('train')
-tr_images = train.create_dataset('images', data=train_images)
-tr_depths = train.create_dataset('depths', data=train_depths)
-tr_sprase = train.create_dataset('sparse', data=train_sparse)
+            test_images[n_crops*i+j, :, :] = img
 
-test = f.create_group('test')
-te_images = test.create_dataset('images', data=test_images)
-te_depths = test.create_dataset('depths', data=test_depths)
-te_sprase = test.create_dataset('sparse', data=test_sparse)
+total = 0.0           
+for i in tqdm(range(len(test_dsm))):
+    image = test_images[i, :, :]
+    sparse = test_sparse[i, :, :]
+    depth = np.zeros(sparse.shape)
+    gt = test_depths[i, :, :]
 
-print("Created dataset with", train_images.shape[0], "training images and", test_images.shape[0], "testing images.")
+    #x = []
+    #y = []
+    #z = []
+    #for row in range(200):
+    #    for col in range(200):
+    #        entry = sparse[row, col]
+    #        if entry != 0:
+    #            x.append(row)
+    #            y.append(col)
+    #            z.append(entry)
+    #f = interp2d(x, y, z)
+    #x = range(0, 200)
+    #y = range(0, 200)
+    #depth = f(x, y)
+    #print(depth.shape)
+    x = np.reshape(image, [-1, 1])
+    print("Fitting k-means...")
+    labels = KMeans(n_clusters=10).fit_predict(x)
+    label_img = np.reshape(labels, [200, 200])
+    for label in labels:
+        mask = label_img == label
+        avg_depth = sparse[mask].sum() / np.count_nonzero(sparse[mask])
+        depth[mask] = avg_depth
+    if True:
+        scipy.misc.imsave('depth' + str(i) + '.jpg', depth[:, :])
+        scipy.misc.imsave('gt' + str(i) + '.jpg', gt[:, :])
+        plt.imsave('labels' + str(i) + '.jpg', label_img)
+        plt.imsave('limg' + str(i) + '.jpg', image)
+    error = ((depth-gt)**2).mean()
+    print(error)
+    total = total + error
+print("Total error:", total/len(test_dsm))
