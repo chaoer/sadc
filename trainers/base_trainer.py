@@ -47,9 +47,8 @@ class BaseTrainer(object):
         self.local_confidence = confidence_softmax[:, :, :, 1:2]
         
         self.est_maps = tf.squeeze(self.global_confidence * self.global_depth + self.local_confidence * self.local_depth)
-        
-        
-        self.loss = tf.reduce_mean(tf.abs((self.est_maps - self.maps)))
+
+        self.loss = tf.reduce_mean(tf.abs((self.est_maps - self.maps))) #+ 1e-5 * tf.reduce_mean(tf.image.total_variation(tf.expand_dims(self.est_maps, axis=3)))
 
         #optim = tf.train.AdamOptimizer(params['learning_rate'], beta1=0.1, beta2=0.999, epsilon=1e-3)
         optim = tf.train.GradientDescentOptimizer(params['learning_rate']) 
