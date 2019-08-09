@@ -17,9 +17,17 @@ The main folders are:
 
 These modules are directed by main.py, the entry point for training our neural networks. 
 
+## Suggested Data
+
 ## Getting Started
 
-### Install Prerequisites 
+### Install Pre-requisites 
+
+### Training
+
+### Testing
+
+### Debugging
 
 
 
