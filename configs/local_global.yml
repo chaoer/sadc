@@ -1,4 +1,4 @@
-type: "simple"
+type: "local_global"
 data_file: "data/old_data/data_01.h5"
 batch_size: 32
 num_iters: 10000

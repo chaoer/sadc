@@ -2,6 +2,8 @@ import argparse
 import yaml
 
 from trainers.base_trainer import BaseTrainer
+from trainers.simple_trainer import SimpleTrainer
+from trainers.local_global_trainer import LocalGlobalTrainer
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config", type=str, help='path to config file')
@@ -14,5 +16,8 @@ except IOError as msg:
 with open("configs/" + args.config, 'r') as f:
     params = yaml.load(f, Loader=yaml.FullLoader)
 
-trainer = BaseTrainer(params)
+if params["type"] == "simple":
+    trainer = SimpleTrainer(params)
+elif params["type"] == "local_global":
+    trainer = LocalGlobalTrainer(params)
 trainer.train()
