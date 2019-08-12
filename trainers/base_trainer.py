@@ -36,10 +36,10 @@ class BaseTrainer(object):
         # Generate directory for output
         date = datetime.datetime.now()
         self.result_dir = "results/" + date.strftime("%a_%b_%d_%I:%M%p")
-        os.mkdir(result_dir)
+        os.mkdir(self.result_dir)
 
         # Dump configurations for current run
-        config_file = open(result_dir + "/configs.yml", "w+")
+        config_file = open(self.result_dir + "/configs.yml", "w+")
         yaml.dump(self.params, config_file)
         config_file.close()
 

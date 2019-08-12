@@ -5,25 +5,17 @@ import numpy as np
 from models.model import *
 import tensorflow as tf
 
-<<<<<<< HEAD
-source_dir = "results/sparse01_new"
-=======
-source_dir = "results/sparse01"
->>>>>>> 1194ba86d2d282caf6fcd15ce9b3dd05eb39013d
+source_dir = "results/lg_no_tv_100"
 
 params = dict()
 
 sess = tf.Session()
 
-<<<<<<< HEAD
-data_file = 'data/data_01.h5'
-=======
-data_file = 'data/old_data/data_01.h5'
->>>>>>> 1194ba86d2d282caf6fcd15ce9b3dd05eb39013d
+data_file = 'data/data_100.h5'
 with h5py.File(data_file, 'r') as f:
-    images = np.array(f['test/images'], dtype=np.float32)
-    sparse = np.array(f['test/sparse'], dtype=np.float32)
-    depths = np.array(f['test/depths'], dtype=np.float32)
+    images = np.array(f['test/images'], dtype=np.float32)[0:100]
+    sparse = np.array(f['test/sparse'], dtype=np.float32)[0:100]
+    depths = np.array(f['test/depths'], dtype=np.float32)[0:100]
 
 global_ = Global(images, sparse, params)
 
@@ -49,17 +41,13 @@ local_confidence = confidence_softmax[:, :, :, 1:2]
         
 est_maps = tf.squeeze(global_confidence * global_depth + local_confidence * local_depth)
 
-<<<<<<< HEAD
-loss = tf.reduce_mean(tf.square((est_maps - depths)))
-=======
 loss = tf.reduce_mean(tf.abs((est_maps - depths)))
->>>>>>> 1194ba86d2d282caf6fcd15ce9b3dd05eb39013d
 
 sess.run(tf.global_variables_initializer())   
 
 
 saver = tf.train.Saver()
-saver.restore(sess, source_dir + '/model.ckpt')
+saver.restore(sess, source_dir + '/final.ckpt')
 
 test_error = loss.eval(session=sess)
 print(test_error)

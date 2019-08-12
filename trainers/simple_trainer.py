@@ -2,11 +2,12 @@ import numpy as np
 import tensorflow as tf
 from data.data_loader import DataLoader
 from models.model import *
+from trainers.base_trainer import BaseTrainer
 
 class SimpleTrainer(BaseTrainer):
 
     def __init__(self, params):
-        super(Deform, self).__init__(params)
+        super(SimpleTrainer, self).__init__(params)
         
     def build(self):
 
@@ -20,7 +21,7 @@ class SimpleTrainer(BaseTrainer):
         
         input_imgs = tf.concat([self.images, tf.expand_dims(self.sparse, axis=3)], axis=3)
 
-        self.net = SimpleNetwork(input_imgs, params)
+        self.net = SimpleNetwork(input_imgs, self.params)
 
         self.est_maps = tf.reshape(self.net.forward(), [-1, 200, 200])
         
@@ -29,15 +30,15 @@ class SimpleTrainer(BaseTrainer):
         self.saver = tf.train.Saver()
 
     def update_ops(self):
-        self.step = optim.minimize(self.loss)
+        self.step = self.optim.minimize(self.loss)
         
     def training_step(self, i):
         loss, _ = self.sess.run([self.loss, self.step])
         return loss
         
     def save_checkpoint(self, i):
-        self.saver.save(self.sess, self.result_dir + "_" + str(i) + ".ckpt")
-        if params["save_output"]:
+        self.saver.save(self.sess, self.result_dir + "/" + str(i) + ".ckpt")
+        if self.params["save_output"]:
             img, sparse, maps, ests = self.sess.run([self.images, self.sparse, self.maps, self.est_maps])
             _map = maps[0, :, :]
             imageio.imwrite(result_dir + "/gt" + str(i) + ".png", _map)
@@ -49,8 +50,8 @@ class SimpleTrainer(BaseTrainer):
             imageio.imwrite(result_dir + "/sparse" + str(i) + ".png", _sparse)
             
     def save_final(self):
-        self.saver.save(self.sess, self.result_dir + "_final.ckpt")
-        if params["save_output"]:
+        self.saver.save(self.sess, self.result_dir + "/final.ckpt")
+        if self.params["save_output"]:
             img, sparse, maps, ests = self.sess.run([self.images, self.sparse, self.maps, self.est_maps])
             _map = maps[0, :, :]
             imageio.imwrite(result_dir + "/gt_final.png", _map)

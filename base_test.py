@@ -5,7 +5,7 @@ import numpy as np
 from models.model import *
 import tensorflow as tf
 
-source_dir = "results/sparse100_base"
+source_dir = "results/simple_01"
 
 params = dict()
 
@@ -17,14 +17,14 @@ x_dim = 3
 d_dim = 128
 num_objs = 1000
 
-data_file = 'data/old_data/data_100.h5'
+data_file = 'data/data_01.h5'
 with h5py.File(data_file, 'r') as f:
     images = np.array(f['test/images'], dtype=np.float32)
     sparse = np.array(f['test/sparse'], dtype=np.float32)
     depths = np.array(f['test/depths'], dtype=np.float32)
 
 input_imgs = tf.concat([images, tf.expand_dims(sparse, axis=3)], axis=3)
-net = Network(input_imgs, params)
+net = SimpleNetwork(input_imgs, params)
 est_maps = tf.reshape(net.forward(), [-1, 200, 200])
 
 loss = tf.reduce_mean(tf.abs((est_maps - depths)))
@@ -33,7 +33,7 @@ sess.run(tf.global_variables_initializer())
 
 
 saver = tf.train.Saver()
-saver.restore(sess, source_dir + '/model.ckpt')
+saver.restore(sess, source_dir + '/final.ckpt')
 
 test_error = loss.eval(session=sess)
 print(test_error)
