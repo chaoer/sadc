@@ -2,6 +2,7 @@ import argparse
 import yaml
 
 from trainers.base_trainer import BaseTrainer
+from trainers.rgb_only_trainer import RGBOnlyTrainer
 from trainers.simple_trainer import SimpleTrainer
 from trainers.local_global_trainer import LocalGlobalTrainer
 
@@ -19,5 +20,7 @@ with open("configs/" + args.config, 'r') as f:
 if params["type"] == "simple":
     trainer = SimpleTrainer(params)
 elif params["type"] == "local_global":
+    trainer = LocalGlobalTrainer(params)
+elif params["type"] == "rgb":
     trainer = LocalGlobalTrainer(params)
 trainer.train()
