@@ -45,7 +45,7 @@ class BaseTrainer(object):
 
         self.sess.run(tf.global_variables_initializer())
         
-        saver = tf.train.Saver()
+        saver = tf.train.Saver(max_to_keep=10000)
 
         for i in range(self.params['num_iters']):
             
