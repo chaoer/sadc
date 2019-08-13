@@ -7,7 +7,7 @@ from trainers.base_trainer import BaseTrainer
 class RGBOnlyTrainer(BaseTrainer):
 
     def __init__(self, params):
-        super(RBGOnlyTrainer, self).__init__(params)
+        super(RGBOnlyTrainer, self).__init__(params)
         
     def build(self):
 
@@ -17,7 +17,7 @@ class RGBOnlyTrainer(BaseTrainer):
 
         self.maps = tf.cast(maps, tf.float32)
 
-        self.net = RGBNetwork(input_imgs, self.params)
+        self.net = RGBNetwork(self.images, self.params)
 
         self.est_maps = tf.reshape(self.net.forward(), [-1, 200, 200])
         

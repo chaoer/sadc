@@ -13,9 +13,9 @@ sess = tf.Session()
 
 data_file = 'data/data_100.h5'
 with h5py.File(data_file, 'r') as f:
-    images = np.array(f['test/images'], dtype=np.float32)[0:100]
-    sparse = np.array(f['test/sparse'], dtype=np.float32)[0:100]
-    depths = np.array(f['test/depths'], dtype=np.float32)[0:100]
+    images = np.array(f['test/images'], dtype=np.float32)
+    sparse = np.array(f['test/sparse'], dtype=np.float32)
+    depths = np.array(f['test/depths'], dtype=np.float32)
 
 global_ = Global(images, sparse, params)
 

@@ -22,5 +22,5 @@ if params["type"] == "simple":
 elif params["type"] == "local_global":
     trainer = LocalGlobalTrainer(params)
 elif params["type"] == "rgb":
-    trainer = LocalGlobalTrainer(params)
+    trainer = RGBOnlyTrainer(params)
 trainer.train()
