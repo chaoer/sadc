@@ -13,17 +13,26 @@ The main folders are:
 - data: This folder contains the code for generating data and for loading data while training.
 - models: This folder contains the baseline, non-ML models as well as the architecture for our neural networks.
 - trainers: This folder contains the basic training procedure, base_trainer.py, as well as subclasses for particular models and loss functions. 
+- eval: This folder contains the evaluation code for each of the neural network models.
 - configs: This folder contains .yml files that outline the hyperparameter settings for training code.
 
 These modules are directed by main.py, the entry point for training our neural networks. 
 
 ## Suggested Data
 
+This project has sucessfully worked with data from ISPRS challenges and the Spacenet Urban 3D challenge. 
+
 ## Getting Started
 
 ### Install Pre-requisites 
 
+Run the following code to intall all necessary pre-requisites.
+
+'pip install -r requirements.txt'
+
 ### Training
+
+The general format for training the included models is to run 'python main.py --config=<config file name>'. 
 
 ### Testing
 
