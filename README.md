@@ -34,9 +34,15 @@ Run the following code to intall all necessary pre-requisites.
 
 The general format for training the included models is to run `python main.py --config=<config file name>`. 
 
+Example config files can be found in the configs directory.
+
 ### Testing
 
+Each model has its own testing code in the eval directory. These are python scripts that include the saved model folder and data file as variables in the first few lines. 
+
 ### Debugging
+
+In the configs files, there is the option `save_output`. When this is set to true, the first image of every 500th batch will be saved during training in order to monitor training progress and diagnose any problems quickly. 
 
 
 
