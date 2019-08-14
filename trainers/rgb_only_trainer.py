@@ -23,7 +23,7 @@ class RGBOnlyTrainer(BaseTrainer):
         
         self.loss = tf.reduce_mean(tf.abs((self.est_maps - self.maps)))
         
-        self.saver = tf.train.Saver()
+        self.saver = tf.train.Saver(max_to_keep=1000)
 
     def update_ops(self):
         self.step = self.optim.minimize(self.loss)

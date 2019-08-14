@@ -11,12 +11,6 @@ params = dict()
 
 sess = tf.Session()
 
-z1_dim = 128
-z2_dim = 3
-x_dim = 3
-d_dim = 128
-num_objs = 1000
-
 data_file = 'data/data_01.h5'
 with h5py.File(data_file, 'r') as f:
     images = np.array(f['test/images'], dtype=np.float32)
@@ -30,9 +24,7 @@ loss = tf.reduce_mean(tf.abs((est_maps - depths)))
 
 sess.run(tf.global_variables_initializer())   
 
-
 saver = tf.train.Saver()
-
 
 for i in range(0, 10000, 500):
     saver.restore(sess, source_dir + "/" + str(i) + ".ckpt")
