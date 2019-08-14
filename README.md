@@ -28,11 +28,11 @@ This project has sucessfully worked with data from ISPRS challenges and the Spac
 
 Run the following code to intall all necessary pre-requisites.
 
-'pip install -r requirements.txt'
+`pip install -r requirements.txt`
 
 ### Training
 
-The general format for training the included models is to run 'python main.py --config=<config file name>'. 
+The general format for training the included models is to run `python main.py --config=<config file name>`. 
 
 ### Testing
 
